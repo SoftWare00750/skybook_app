@@ -2,6 +2,35 @@
 
 A pixel-inspired Flutter clone of the SkyBook flight-booking UI mockups, covering every screen from sign-in through booking confirmation and account management.
 
+## What's new since the first version
+
+- **Real logo** on the Welcome screen, from `assets/images/logo.png`.
+- **Live sign in / sign up** against the companion .NET backend in
+  `../skybook_backend` (Supabase-backed user accounts + JWT).
+- **Destination photos** on Search Results and Flight Details, hotlinked
+  from Unsplash and keyed by arrival airport code (`lib/data/destination_images.dart`).
+- **Live flight search** via aviationstack.com, with automatic fallback to
+  the bundled sample flights if no API key is configured or the request
+  fails (`lib/services/aviationstack_service.dart`).
+
+## Configuration
+
+Edit `lib/config/app_config.dart`, or pass values at run time:
+
+```bash
+flutter run \
+  --dart-define=BACKEND_BASE_URL=http://localhost:5236 \
+  --dart-define=AVIATIONSTACK_API_KEY=your_aviationstack_key
+```
+
+Without an aviationstack key, Search Results still works and shows the
+sample flights with a small notice banner explaining why. Without the
+backend running, Sign In / Sign Up will show a friendly connection error
+instead of crashing.
+
+See `../skybook_backend/README.md` for how to stand up the .NET + Supabase
+side.
+
 ## Screens included
 
 **Onboarding & Auth**
