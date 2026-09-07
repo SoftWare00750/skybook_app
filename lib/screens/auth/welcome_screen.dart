@@ -2,11 +2,53 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_textfield.dart';
+import '../../services/auth_service.dart';
 import 'signup_screen.dart';
 import '../home/home_screen.dart';
 
-class WelcomeScreen extends StatelessWidget {
+class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
+
+  @override
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen> {
+  final _authService = AuthService();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _loading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _signIn() async {
+    if (_emailController.text.trim().isEmpty || _passwordController.text.isEmpty) {
+      _showMessage('Please enter your email/phone and password.');
+      return;
+    }
+    setState(() => _loading = true);
+    final result = await _authService.login(
+      emailOrPhone: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+    if (!mounted) return;
+    setState(() => _loading = false);
+
+    if (result.success) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+    } else {
+      _showMessage(result.errorMessage ?? 'Sign in failed.');
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,20 +57,25 @@ class WelcomeScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(24, 24, 24, 8),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.flight_takeoff_rounded, color: Colors.white, size: 40),
-                      SizedBox(height: 24),
-                      Text('Welcome Back',
+                      Image.asset(
+                        'assets/images/logo.png',
+                        height: 64,
+                        errorBuilder: (context, error, stack) =>
+                            const Icon(Icons.flight_takeoff_rounded, color: Colors.white, size: 40),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text('Welcome Back',
                           style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 6),
-                      Text('Sign in to continue your journey',
+                      const SizedBox(height: 6),
+                      const Text('Sign in to continue your journey',
                           style: TextStyle(color: Colors.white70, fontSize: 14)),
                     ],
                   ),
@@ -51,9 +98,19 @@ class WelcomeScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const CustomTextField(hint: 'Email or Phone number', icon: Icons.email_outlined),
+                      CustomTextField(
+                        hint: 'Email or Phone number',
+                        icon: Icons.email_outlined,
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                      ),
                       const SizedBox(height: 16),
-                      const CustomTextField(hint: 'Password', icon: Icons.lock_outline, obscurable: true),
+                      CustomTextField(
+                        hint: 'Password',
+                        icon: Icons.lock_outline,
+                        obscurable: true,
+                        controller: _passwordController,
+                      ),
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
@@ -64,8 +121,8 @@ class WelcomeScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       PrimaryButton(
                         label: 'Sign In',
-                        onPressed: () => Navigator.pushReplacement(
-                            context, MaterialPageRoute(builder: (_) => const HomeScreen())),
+                        loading: _loading,
+                        onPressed: _signIn,
                       ),
                       const SizedBox(height: 24),
                       const Row(

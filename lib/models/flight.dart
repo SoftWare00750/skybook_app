@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/destination_images.dart';
 
 class Flight {
   final String airline;
@@ -26,6 +27,60 @@ class Flight {
     required this.date,
     required this.price,
   });
+
+  /// A destination photo for the arrival city, used as a header image on
+  /// the search results and flight details screens.
+  String get destinationImage => DestinationImages.forIata(arriveCode);
+
+  /// Builds a [Flight] from a single `data[]` entry of an aviationstack
+  /// `/v1/flights` response. aviationstack doesn't return a ticket price
+  /// (it's a flight-status API, not a fares API), so [estimatedPrice] is
+  /// used to keep the booking flow working end-to-end.
+  factory Flight.fromAviationstack(Map<String, dynamic> json, {double estimatedPrice = 599.0}) {
+    final airline = json['airline']?['name'] ?? 'Unknown Airline';
+    final flightNumber = json['flight']?['iata'] ?? json['flight']?['icao'] ?? '—';
+    final departure = json['departure'] ?? {};
+    final arrival = json['arrival'] ?? {};
+
+    String timeOf(String? iso) {
+      if (iso == null) return '--:--';
+      final dt = DateTime.tryParse(iso);
+      if (dt == null) return '--:--';
+      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    }
+
+    String dateOf(String? iso) {
+      if (iso == null) return '';
+      final dt = DateTime.tryParse(iso);
+      if (dt == null) return '';
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return '${dt.day} ${months[dt.month - 1]}, ${dt.year}';
+    }
+
+    String durationBetween(String? dep, String? arr) {
+      final d = DateTime.tryParse(dep ?? '');
+      final a = DateTime.tryParse(arr ?? '');
+      if (d == null || a == null) return '—';
+      final diff = a.difference(d);
+      final h = diff.inHours.abs();
+      final m = diff.inMinutes.abs() % 60;
+      return '${h}h ${m}m';
+    }
+
+    return Flight(
+      airline: airline,
+      flightCode: flightNumber,
+      airlineColor: const Color(0xFF1F3A93),
+      departTime: timeOf(departure['scheduled']),
+      departCode: departure['iata'] ?? '---',
+      arriveTime: timeOf(arrival['scheduled']),
+      arriveCode: arrival['iata'] ?? '---',
+      duration: durationBetween(departure['scheduled'], arrival['scheduled']),
+      stops: 'Non-stop',
+      date: dateOf(departure['scheduled']),
+      price: estimatedPrice,
+    );
+  }
 }
 
 // Sample data mirroring the mockups (JFK -> LHR search results).

@@ -20,6 +20,12 @@ class FlightDetailsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            DestinationImageBanner(
+              imageUrl: flight.destinationImage,
+              cityLabel: '${flight.departCode} → ${flight.arriveCode}',
+              height: 160,
+            ),
+            const SizedBox(height: 20),
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
