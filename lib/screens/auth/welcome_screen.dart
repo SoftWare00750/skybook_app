@@ -18,6 +18,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _loading = false;
+  bool _guestLoading = false;
 
   @override
   void dispose() {
@@ -44,6 +45,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     } else {
       _showMessage(result.errorMessage ?? 'Sign in failed.');
     }
+  }
+
+  Future<void> _continueAsGuest() async {
+    setState(() => _guestLoading = true);
+    await _authService.continueAsGuest();
+    if (!mounted) return;
+    setState(() => _guestLoading = false);
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
   }
 
   void _showMessage(String message) {
@@ -142,6 +151,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           const SizedBox(width: 16),
                           SocialButton(asset: 'A', icon: Icons.apple, onPressed: () {}),
                         ],
+                      ),
+                      const SizedBox(height: 20),
+                      SecondaryButton(
+                        label: _guestLoading ? 'Continuing…' : 'Continue as Guest',
+                        icon: Icons.explore_outlined,
+                        onPressed: _guestLoading ? null : _continueAsGuest,
                       ),
                       const SizedBox(height: 28),
                       Row(

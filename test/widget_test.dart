@@ -1,30 +1,45 @@
-// This is a basic Flutter widget test.
+// Basic smoke tests for the SkyBook app.
 //
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// These verify the app boots to the right first screen depending on
+// whether a session was saved from a previous run (see lib/screens/auth/
+// auth_gate.dart), and that the "Continue as Guest" affordance exists on
+// the Welcome screen.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:skybook/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Shows the Welcome screen (with a guest option) when there is no saved session',
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    await tester.pumpWidget(const SkyBookApp());
+    await tester.pumpAndSettle();
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    expect(find.text('Welcome Back'), findsOneWidget);
+    expect(find.text('Continue as Guest'), findsOneWidget);
+  });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  testWidgets('Skips straight to Home when a guest session was saved', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'skybook_is_guest': true});
+
+    await tester.pumpWidget(const SkyBookApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Welcome Back'), findsNothing);
+    expect(find.text('Where would you like to go?'), findsOneWidget);
+  });
+
+  testWidgets('Skips straight to Home when a signed-in session was saved', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({'skybook_auth_token': 'test-token'});
+
+    await tester.pumpWidget(const SkyBookApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Welcome Back'), findsNothing);
+    expect(find.text('Where would you like to go?'), findsOneWidget);
   });
 }

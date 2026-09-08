@@ -1,11 +1,27 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/custom_button.dart';
+import '../../services/auth_service.dart';
 import '../home/home_screen.dart';
 import 'welcome_screen.dart';
 
-class OnboardingScreen extends StatelessWidget {
+class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
+
+  @override
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends State<OnboardingScreen> {
+  final _authService = AuthService();
+  bool _loading = false;
+
+  Future<void> _continueAsGuest() async {
+    setState(() => _loading = true);
+    await _authService.continueAsGuest();
+    if (!mounted) return;
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,8 +76,8 @@ class OnboardingScreen extends StatelessWidget {
                     const Spacer(),
                     PrimaryButton(
                       label: 'Continue as Guest',
-                      onPressed: () => Navigator.pushReplacement(
-                          context, MaterialPageRoute(builder: (_) => const HomeScreen())),
+                      loading: _loading,
+                      onPressed: _loading ? null : _continueAsGuest,
                     ),
                     const SizedBox(height: 16),
                     Row(

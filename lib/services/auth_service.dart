@@ -28,6 +28,7 @@ class AuthService {
   static const _tokenKey = 'skybook_auth_token';
   static const _nameKey = 'skybook_user_name';
   static const _emailKey = 'skybook_user_email';
+  static const _guestKey = 'skybook_is_guest';
 
   Uri _endpoint(String path) => Uri.parse('${AppConfig.backendBaseUrl}$path');
 
@@ -98,6 +99,8 @@ class AuthService {
     await prefs.setString(_tokenKey, token);
     if (name != null) await prefs.setString(_nameKey, name);
     if (email != null) await prefs.setString(_emailKey, email);
+    // A real sign-in/sign-up always supersedes any earlier guest session.
+    await prefs.remove(_guestKey);
   }
 
   Future<String?> currentToken() async {
@@ -105,11 +108,46 @@ class AuthService {
     return prefs.getString(_tokenKey);
   }
 
+  Future<String?> cachedFullName() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_nameKey);
+  }
+
+  Future<String?> cachedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_emailKey);
+  }
+
+  /// Whether there's an active, non-guest session (i.e. a stored JWT).
+  Future<bool> isSignedIn() async {
+    final token = await currentToken();
+    return token != null && token.isNotEmpty;
+  }
+
+  /// Marks the session as a guest session — no backend call, no token.
+  /// Clears any previous signed-in session first so the two states never
+  /// overlap.
+  Future<void> continueAsGuest() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenKey);
+    await prefs.remove(_nameKey);
+    await prefs.remove(_emailKey);
+    await prefs.setBool(_guestKey, true);
+  }
+
+  /// Whether the current session is a guest session (set by
+  /// [continueAsGuest] and cleared by [logout] or a real [login]/[signup]).
+  Future<bool> isGuest() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_guestKey) ?? false;
+  }
+
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_nameKey);
     await prefs.remove(_emailKey);
+    await prefs.remove(_guestKey);
   }
 
   String _friendlyError(Object e) {
