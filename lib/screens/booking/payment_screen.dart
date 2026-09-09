@@ -8,7 +8,17 @@ import 'booking_confirmed_screen.dart';
 class PaymentScreen extends StatefulWidget {
   final Flight flight;
   final double total;
-  const PaymentScreen({super.key, required this.flight, required this.total});
+  final String seatNumber;
+  final String cabinClass;
+  final int passengers;
+  const PaymentScreen({
+    super.key,
+    required this.flight,
+    required this.total,
+    this.seatNumber = '',
+    this.cabinClass = 'Economy',
+    this.passengers = 1,
+  });
 
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
@@ -98,14 +108,26 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => AddCardScreen(flight: widget.flight, total: widget.total),
+                          builder: (_) => AddCardScreen(
+                            flight: widget.flight,
+                            total: widget.total,
+                            seatNumber: widget.seatNumber,
+                            cabinClass: widget.cabinClass,
+                            passengers: widget.passengers,
+                          ),
                         ),
                       );
                     } else {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => BookingConfirmedScreen(flight: widget.flight, total: widget.total),
+                          builder: (_) => BookingConfirmedScreen(
+                            flight: widget.flight,
+                            total: widget.total,
+                            seatNumber: widget.seatNumber,
+                            cabinClass: widget.cabinClass,
+                            passengers: widget.passengers,
+                          ),
                         ),
                       );
                     }

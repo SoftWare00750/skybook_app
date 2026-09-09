@@ -121,8 +121,15 @@ class FlightCard extends StatelessWidget {
               children: [
                 AirlineLogo(color: flight.airlineColor),
                 const SizedBox(width: 10),
-                Text(flight.airline, style: const TextStyle(fontWeight: FontWeight.w600)),
-                const Spacer(),
+                Expanded(
+                  child: Text(
+                    flight.airline,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 Text(flight.flightCode, style: const TextStyle(color: AppColors.textGrey, fontSize: 12)),
               ],
             ),

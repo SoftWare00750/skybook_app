@@ -7,7 +7,15 @@ import 'payment_screen.dart';
 class SeatSelectionScreen extends StatefulWidget {
   final Flight flight;
   final double total;
-  const SeatSelectionScreen({super.key, required this.flight, required this.total});
+  final String cabinClass;
+  final int passengers;
+  const SeatSelectionScreen({
+    super.key,
+    required this.flight,
+    required this.total,
+    this.cabinClass = 'Economy',
+    this.passengers = 1,
+  });
 
   @override
   State<SeatSelectionScreen> createState() => _SeatSelectionScreenState();
@@ -43,11 +51,16 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Select Seats', style: TextStyle(fontSize: 18)),
-            Text('JFK → LHR · 15 Jun, 2023', style: TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.normal)),
+            const Text('Select Seats', style: TextStyle(fontSize: 18)),
+            Text(
+              '${widget.flight.departCode} → ${widget.flight.arriveCode} · ${widget.flight.date}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.normal),
+            ),
           ],
         ),
       ),
@@ -119,7 +132,13 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                   onPressed: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => PaymentScreen(flight: widget.flight, total: widget.total + seatPrice),
+                      builder: (_) => PaymentScreen(
+                        flight: widget.flight,
+                        total: widget.total + seatPrice,
+                        seatNumber: selectedSeat ?? '',
+                        cabinClass: widget.cabinClass,
+                        passengers: widget.passengers,
+                      ),
                     ),
                   ),
                 ),

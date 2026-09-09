@@ -7,7 +7,17 @@ import 'booking_confirmed_screen.dart';
 class AddCardScreen extends StatefulWidget {
   final Flight flight;
   final double total;
-  const AddCardScreen({super.key, required this.flight, required this.total});
+  final String seatNumber;
+  final String cabinClass;
+  final int passengers;
+  const AddCardScreen({
+    super.key,
+    required this.flight,
+    required this.total,
+    this.seatNumber = '',
+    this.cabinClass = 'Economy',
+    this.passengers = 1,
+  });
 
   @override
   State<AddCardScreen> createState() => _AddCardScreenState();
@@ -126,7 +136,13 @@ class _AddCardScreenState extends State<AddCardScreen> {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => BookingConfirmedScreen(flight: widget.flight, total: widget.total),
+                  builder: (_) => BookingConfirmedScreen(
+                    flight: widget.flight,
+                    total: widget.total,
+                    seatNumber: widget.seatNumber,
+                    cabinClass: widget.cabinClass,
+                    passengers: widget.passengers,
+                  ),
                 ),
               ),
             ),

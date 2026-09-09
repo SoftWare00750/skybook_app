@@ -7,7 +7,9 @@ import '../booking/passenger_details_screen.dart';
 
 class FlightDetailsScreen extends StatelessWidget {
   final Flight flight;
-  const FlightDetailsScreen({super.key, required this.flight});
+  final String cabinClass;
+  final int passengers;
+  const FlightDetailsScreen({super.key, required this.flight, this.cabinClass = 'Economy', this.passengers = 1});
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +19,9 @@ class FlightDetailsScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Flight Details')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
+        child: Center(
+        child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 560),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -39,8 +44,15 @@ class FlightDetailsScreen extends StatelessWidget {
                     children: [
                       AirlineLogo(color: flight.airlineColor),
                       const SizedBox(width: 10),
-                      Text(flight.airline, style: const TextStyle(fontWeight: FontWeight.w600)),
-                      const Spacer(),
+                      Expanded(
+                        child: Text(
+                          flight.airline,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
                       Text(flight.flightCode, style: const TextStyle(color: AppColors.textGrey)),
                     ],
                   ),
@@ -83,11 +95,11 @@ class FlightDetailsScreen extends StatelessWidget {
             _infoRow('Aircraft', 'Boeing 777-300ER'),
             _infoRow('Duration', flight.duration),
             _infoRow('Baggage', '23 kg checked'),
-            _infoRow('Cabin', 'Economy'),
+            _infoRow('Cabin', cabinClass),
             const SizedBox(height: 24),
             const Text('Fare Summary', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 12),
-            _infoRow('1 Adult', '\$${flight.price.toStringAsFixed(2)}'),
+            _infoRow('$passengers ${passengers == 1 ? 'Adult' : 'Adults'}', '\$${flight.price.toStringAsFixed(2)}'),
             _infoRow('Taxes & fees', '\$${taxes.toStringAsFixed(2)}'),
             const Divider(height: 28),
             Row(
@@ -103,10 +115,19 @@ class FlightDetailsScreen extends StatelessWidget {
               label: 'Continue',
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => PassengerDetailsScreen(flight: flight, total: total)),
+                MaterialPageRoute(
+                  builder: (_) => PassengerDetailsScreen(
+                    flight: flight,
+                    total: total,
+                    cabinClass: cabinClass,
+                    passengers: passengers,
+                  ),
+                ),
               ),
             ),
           ],
+        ),
+        ),
         ),
       ),
     );
@@ -116,10 +137,18 @@ class FlightDetailsScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppColors.textGrey)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Expanded(child: Text(label, style: const TextStyle(color: AppColors.textGrey))),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
         ],
       ),
     );

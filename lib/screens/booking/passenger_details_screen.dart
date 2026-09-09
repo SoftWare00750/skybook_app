@@ -8,17 +8,26 @@ import 'seat_selection_screen.dart';
 class PassengerDetailsScreen extends StatelessWidget {
   final Flight flight;
   final double total;
-  const PassengerDetailsScreen({super.key, required this.flight, required this.total});
+  final String cabinClass;
+  final int passengers;
+  const PassengerDetailsScreen({
+    super.key,
+    required this.flight,
+    required this.total,
+    this.cabinClass = 'Economy',
+    this.passengers = 1,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Passenger Details', style: TextStyle(fontSize: 18)),
-            Text('1 Adult', style: TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.normal)),
+            const Text('Passenger Details', style: TextStyle(fontSize: 18)),
+            Text('$passengers ${passengers == 1 ? 'Adult' : 'Adults'}',
+                style: const TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.normal)),
           ],
         ),
       ),
@@ -61,7 +70,14 @@ class PassengerDetailsScreen extends StatelessWidget {
               label: 'Continue',
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => SeatSelectionScreen(flight: flight, total: total)),
+                MaterialPageRoute(
+                  builder: (_) => SeatSelectionScreen(
+                    flight: flight,
+                    total: total,
+                    cabinClass: cabinClass,
+                    passengers: passengers,
+                  ),
+                ),
               ),
             ),
           ],
