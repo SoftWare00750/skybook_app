@@ -19,6 +19,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   final _passwordController = TextEditingController();
   bool _loading = false;
   bool _guestLoading = false;
+  bool _googleLoading = false;
+  bool _facebookLoading = false;
 
   @override
   void dispose() {
@@ -47,6 +49,30 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     }
   }
 
+  Future<void> _signInWithGoogle() async {
+    setState(() => _googleLoading = true);
+    final result = await _authService.loginWithGoogle();
+    if (!mounted) return;
+    setState(() => _googleLoading = false);
+    if (result.success) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+    } else {
+      _showMessage(result.errorMessage ?? 'Google sign-in failed.');
+    }
+  }
+
+  Future<void> _signInWithFacebook() async {
+    setState(() => _facebookLoading = true);
+    final result = await _authService.loginWithFacebook();
+    if (!mounted) return;
+    setState(() => _facebookLoading = false);
+    if (result.success) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+    } else {
+      _showMessage(result.errorMessage ?? 'Facebook sign-in failed.');
+    }
+  }
+
   Future<void> _continueAsGuest() async {
     setState(() => _guestLoading = true);
     await _authService.continueAsGuest();
@@ -66,8 +92,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -145,12 +178,20 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         ],
                       ),
                       const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          SocialButton(asset: 'G', icon: Icons.g_mobiledata, onPressed: () {}),
-                          const SizedBox(width: 16),
-                          SocialButton(asset: 'A', icon: Icons.apple, onPressed: () {}),
-                        ],
+                      SocialButton(
+                        assetPath: 'assets/icons/google.svg',
+                        fallbackIcon: Icons.g_mobiledata,
+                        label: 'Continue with Google',
+                        loading: _googleLoading,
+                        onPressed: _signInWithGoogle,
+                      ),
+                      const SizedBox(height: 12),
+                      SocialButton(
+                        assetPath: 'assets/icons/facebook.svg',
+                        fallbackIcon: Icons.facebook,
+                        label: 'Continue with Facebook',
+                        loading: _facebookLoading,
+                        onPressed: _signInWithFacebook,
                       ),
                       const SizedBox(height: 20),
                       SecondaryButton(

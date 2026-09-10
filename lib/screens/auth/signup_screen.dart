@@ -5,6 +5,7 @@ import '../../widgets/custom_textfield.dart';
 import '../../services/auth_service.dart';
 import 'onboarding_screen.dart';
 import 'welcome_screen.dart';
+import '../home/home_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -22,6 +23,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
   bool _agreed = false;
   bool _loading = false;
+  bool _googleLoading = false;
+  bool _facebookLoading = false;
 
   @override
   void dispose() {
@@ -58,6 +61,30 @@ class _SignupScreenState extends State<SignupScreen> {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const OnboardingScreen()));
     } else {
       _showMessage(result.errorMessage ?? 'Sign up failed.');
+    }
+  }
+
+  Future<void> _signUpWithGoogle() async {
+    setState(() => _googleLoading = true);
+    final result = await _authService.loginWithGoogle();
+    if (!mounted) return;
+    setState(() => _googleLoading = false);
+    if (result.success) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+    } else {
+      _showMessage(result.errorMessage ?? 'Google sign-up failed.');
+    }
+  }
+
+  Future<void> _signUpWithFacebook() async {
+    setState(() => _facebookLoading = true);
+    final result = await _authService.loginWithFacebook();
+    if (!mounted) return;
+    setState(() => _facebookLoading = false);
+    if (result.success) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+    } else {
+      _showMessage(result.errorMessage ?? 'Facebook sign-up failed.');
     }
   }
 
@@ -172,12 +199,20 @@ class _SignupScreenState extends State<SignupScreen> {
                         ],
                       ),
                       const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          SocialButton(asset: 'G', icon: Icons.g_mobiledata, onPressed: () {}),
-                          const SizedBox(width: 16),
-                          SocialButton(asset: 'A', icon: Icons.apple, onPressed: () {}),
-                        ],
+                      SocialButton(
+                        assetPath: 'assets/icons/google.svg',
+                        fallbackIcon: Icons.g_mobiledata,
+                        label: 'Continue with Google',
+                        loading: _googleLoading,
+                        onPressed: _signUpWithGoogle,
+                      ),
+                      const SizedBox(height: 12),
+                      SocialButton(
+                        assetPath: 'assets/icons/facebook.svg',
+                        fallbackIcon: Icons.facebook,
+                        label: 'Continue with Facebook',
+                        loading: _facebookLoading,
+                        onPressed: _signUpWithFacebook,
                       ),
                       const SizedBox(height: 28),
                       Row(

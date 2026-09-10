@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/auth_service.dart';
 import '../home/home_screen.dart';
-import 'welcome_screen.dart';
+import 'landing_screen.dart';
 
 /// The app's actual start screen. Decides, once, whether there's a saved
 /// session from a previous run — either a real signed-in user (a stored
 /// JWT) or a guest session (see [AuthService.continueAsGuest]) — and skips
 /// straight to [HomeScreen] if so. Otherwise it falls back to
-/// [WelcomeScreen] so the person can sign in, sign up, or continue as a
-/// guest.
+/// [LandingScreen], the branded welcome screen the person sees before
+/// choosing to sign in, sign up, or continue as a guest.
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -30,7 +30,7 @@ class AuthGate extends StatelessWidget {
             body: Center(child: CircularProgressIndicator(color: Colors.white)),
           );
         }
-        return (snapshot.data ?? false) ? const HomeScreen() : const WelcomeScreen();
+        return (snapshot.data ?? false) ? const HomeScreen() : const LandingScreen();
       },
     );
   }

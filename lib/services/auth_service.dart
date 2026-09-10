@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import '../config/app_config.dart';
 
 class AuthResult {
@@ -68,6 +70,74 @@ class AuthService {
               'emailOrPhone': emailOrPhone,
               'password': password,
             }),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      return _handleAuthResponse(response);
+    } catch (e) {
+      return AuthResult.error(_friendlyError(e));
+    }
+  }
+
+  /// Signs in (or silently signs up) with Google. Gets a Google ID token
+  /// from the native Google Sign-In SDK, then hands it to the backend's
+  /// `/api/auth/google`, which verifies it server-side and issues our own
+  /// JWT — the Flutter app never trusts the Google token on its own.
+  Future<AuthResult> loginWithGoogle() async {
+    try {
+      final googleSignIn = GoogleSignIn(
+        scopes: const ['email', 'profile'],
+        // Required so Google returns an ID token (not just an access
+        // token) — set AppConfig.googleServerClientId to your OAuth 2.0
+        // *Web* client ID from Google Cloud Console. See README for setup.
+        serverClientId: AppConfig.googleServerClientId.isEmpty ? null : AppConfig.googleServerClientId,
+      );
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        return AuthResult.error('Google sign-in was cancelled.');
+      }
+      final googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
+      if (idToken == null) {
+        return AuthResult.error(
+          "Google didn't return an ID token. Make sure AppConfig.googleServerClientId is set to a Web OAuth client ID.",
+        );
+      }
+
+      final response = await http
+          .post(
+            _endpoint('/api/auth/google'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'idToken': idToken}),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      return _handleAuthResponse(response);
+    } catch (e) {
+      return AuthResult.error(_friendlyError(e));
+    }
+  }
+
+  /// Signs in (or silently signs up) with Facebook. Same pattern as
+  /// Google: the native SDK gets an access token, the backend verifies it
+  /// against Facebook's Graph API and issues our own JWT.
+  Future<AuthResult> loginWithFacebook() async {
+    try {
+      final result = await FacebookAuth.instance.login(permissions: const ['email', 'public_profile']);
+
+      if (result.status == LoginStatus.cancelled) {
+        return AuthResult.error('Facebook sign-in was cancelled.');
+      }
+      if (result.status != LoginStatus.success || result.accessToken == null) {
+        return AuthResult.error(result.message ?? 'Facebook sign-in failed.');
+      }
+
+      final accessToken = result.accessToken!.tokenString;
+      final response = await http
+          .post(
+            _endpoint('/api/auth/facebook'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'accessToken': accessToken}),
           )
           .timeout(const Duration(seconds: 15));
 

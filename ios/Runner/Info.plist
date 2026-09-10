@@ -26,6 +26,46 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+
+	<!-- Facebook Login SDK — replace REPLACE_WITH_FACEBOOK_APP_ID and
+	     REPLACE_WITH_FACEBOOK_CLIENT_TOKEN with real values from
+	     https://developers.facebook.com/apps -> your app -> Settings -> Basic.
+	     Facebook sign-in will fail on iOS until these are filled in. -->
+	<key>FacebookAppID</key>
+	<string>REPLACE_WITH_FACEBOOK_APP_ID</string>
+	<key>FacebookClientToken</key>
+	<string>REPLACE_WITH_FACEBOOK_CLIENT_TOKEN</string>
+	<key>FacebookDisplayName</key>
+	<string>SkyBook</string>
+
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- Must be "fb" + your Facebook App ID, e.g. "fb1234567890". -->
+				<string>fbREPLACE_WITH_FACEBOOK_APP_ID</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- The REVERSED_CLIENT_ID from your iOS OAuth client in
+				     Google Cloud Console (also found in GoogleService-Info.plist
+				     if you're using Firebase) — looks like
+				     "com.googleusercontent.apps.XXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX". -->
+				<string>REPLACE_WITH_GOOGLE_REVERSED_CLIENT_ID</string>
+			</array>
+		</dict>
+	</array>
+
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fbapi</string>
+		<string>fbauth2</string>
+		<string>fb-messenger-share-api</string>
+		<string>fbshareextension</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

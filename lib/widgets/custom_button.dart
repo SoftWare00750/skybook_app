@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../theme/app_theme.dart';
 
 class PrimaryButton extends StatelessWidget {
@@ -64,20 +65,51 @@ class SecondaryButton extends StatelessWidget {
   }
 }
 
+/// A full-width "Continue with Google / Facebook" button using the real
+/// brand mark (bundled as an SVG asset, see assets/icons/). Falls back to a
+/// plain icon if the asset somehow fails to load.
 class SocialButton extends StatelessWidget {
-  final String asset; // simple letter/icon fallback
-  final IconData icon;
+  final String assetPath;
+  final IconData fallbackIcon;
+  final String label;
   final VoidCallback? onPressed;
+  final bool loading;
 
-  const SocialButton({super.key, required this.asset, required this.icon, this.onPressed});
+  const SocialButton({
+    super.key,
+    required this.assetPath,
+    required this.fallbackIcon,
+    required this.label,
+    this.onPressed,
+    this.loading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
+    return SizedBox(
+      width: double.infinity,
       child: OutlinedButton(
-        onPressed: onPressed,
+        onPressed: loading ? null : onPressed,
         style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-        child: Icon(icon, color: AppColors.textDark),
+        child: loading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.textGrey),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    assetPath,
+                    height: 20,
+                    width: 20,
+                    placeholderBuilder: (context) => Icon(fallbackIcon, size: 20, color: AppColors.textDark),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(label, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                ],
+              ),
       ),
     );
   }
