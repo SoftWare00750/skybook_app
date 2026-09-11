@@ -253,7 +253,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   Widget _noticeBanner(String text, {required IconData icon, required Color color}) {
     return Container(
       width: double.infinity,
-      color: color.withOpacity(0.10),
+      color: color.withValues(alpha: 0.10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [

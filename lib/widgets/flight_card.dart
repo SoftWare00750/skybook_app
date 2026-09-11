@@ -70,7 +70,7 @@ class DestinationImageBanner extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.black.withOpacity(0), Colors.black.withOpacity(0.55)],
+                    colors: [Colors.black.withValues(alpha: 0), Colors.black.withValues(alpha: 0.55)],
                   ),
                 ),
               ),

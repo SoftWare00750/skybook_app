@@ -5,7 +5,6 @@
 // auth_gate.dart), and that the "Continue as Guest" affordance exists on
 // the Welcome screen.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

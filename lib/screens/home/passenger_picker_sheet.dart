@@ -153,7 +153,7 @@ class _PassengerSheetState extends State<_PassengerSheet> {
         height: 32,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: enabled ? AppColors.primary.withOpacity(0.1) : AppColors.inputFill,
+          color: enabled ? AppColors.primary.withValues(alpha: 0.1) : AppColors.inputFill,
         ),
         child: Icon(icon, size: 18, color: enabled ? AppColors.primary : AppColors.textGrey),
       ),

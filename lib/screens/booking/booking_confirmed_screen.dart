@@ -154,7 +154,7 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
-                          color: AppColors.warning.withOpacity(0.12),
+                          color: AppColors.warning.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                         child: Row(
@@ -183,7 +183,7 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
-                          color: AppColors.warning.withOpacity(0.12),
+                          color: AppColors.warning.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                         child: Row(

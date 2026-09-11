@@ -225,7 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Positioned(
                                   right: 0,
                                   child: Material(
-                                    color: AppColors.primary.withOpacity(0.08),
+                                    color: AppColors.primary.withValues(alpha: 0.08),
                                     shape: const CircleBorder(),
                                     child: InkWell(
                                       customBorder: const CircleBorder(),
@@ -295,7 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     width: 90,
                                     height: 80,
                                     decoration: BoxDecoration(
-                                      color: AppColors.primary.withOpacity(selected ? 0.18 : 0.08),
+                                      color: AppColors.primary.withValues(alpha: selected ? 0.18 : 0.08),
                                       borderRadius: BorderRadius.circular(AppRadius.md),
                                       border: selected ? Border.all(color: AppColors.primary, width: 1.4) : null,
                                     ),

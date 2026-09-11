@@ -73,7 +73,7 @@ class _AirportPickerScreenState extends State<AirportPickerScreen> {
                         return ListTile(
                           enabled: !disabled,
                           leading: CircleAvatar(
-                            backgroundColor: AppColors.primary.withOpacity(0.08),
+                            backgroundColor: AppColors.primary.withValues(alpha: 0.08),
                             child: Text(
                               airport.iata.substring(0, 1),
                               style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
