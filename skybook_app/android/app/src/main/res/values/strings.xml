@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SkyBook</string>
+
+    <!-- Facebook Login SDK — replace with real values from
+         https://developers.facebook.com/apps -> your app -> Settings -> Basic.
+         facebook_app_id is just the numeric App ID (e.g. "1234567890").
+         fb_login_protocol_scheme must be "fb" + that same App ID
+         (e.g. "fb1234567890") — Android uses it to return control to this
+         app after the Facebook login flow. Leaving these as placeholders
+         means Facebook sign-in will fail on Android until they're filled in. -->
+    <string name="facebook_app_id">REPLACE_WITH_FACEBOOK_APP_ID</string>
+    <string name="fb_login_protocol_scheme">fbREPLACE_WITH_FACEBOOK_APP_ID</string>
+    <string name="facebook_client_token">REPLACE_WITH_FACEBOOK_CLIENT_TOKEN</string>
+</resources>
