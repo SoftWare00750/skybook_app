@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/flight.dart';
+import '../services/currency_service.dart';
 
 class AirlineLogo extends StatelessWidget {
   final Color color;
@@ -176,7 +177,7 @@ class FlightCard extends StatelessWidget {
               children: [
                 Text(flight.date, style: const TextStyle(color: AppColors.textGrey, fontSize: 12)),
                 Text(
-                  '\$${flight.price.toStringAsFixed(2)}',
+                  CurrencyService.instance.format(flight.price),
                   style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ],

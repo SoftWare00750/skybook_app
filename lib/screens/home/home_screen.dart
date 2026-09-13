@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../data/airports.dart';
+import '../../data/destination_images.dart';
+import '../../services/currency_service.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/bottom_nav.dart';
 import '../search/airport_picker_screen.dart';
@@ -30,6 +32,12 @@ class _HomeScreenState extends State<HomeScreen> {
     _now = DateTime.now();
     _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() => _now = DateTime.now());
+    });
+    // main() already awaits this before the app starts, so it's normally
+    // already loaded — this is just a defensive fallback (e.g. hot
+    // restart) that refreshes the currency chip if it wasn't.
+    CurrencyService.instance.load().then((_) {
+      if (mounted) setState(() {});
     });
   }
 
@@ -66,11 +74,22 @@ class _HomeScreenState extends State<HomeScreen> {
   PassengerSelection _passengers = const PassengerSelection(adults: 1, children: 0, cabinClass: 'Economy');
 
   // Quick-pick destinations shown below the search card. Each maps to a
-  // real Airport so tapping one actually fills in the "To" field.
+  // real Airport so tapping one actually fills in the "To" field, and its
+  // thumbnail is a real photo of the destination (see
+  // data/destination_images.dart) rather than a generic icon.
   final _popularDestinations = const [
-    (airport: Airport(iata: 'LHR', city: 'London', country: 'United Kingdom'), icon: Icons.location_city),
-    (airport: Airport(iata: 'CDG', city: 'Paris', country: 'France'), icon: Icons.location_city),
-    (airport: Airport(iata: 'BKK', city: 'Bangkok', country: 'Thailand'), icon: Icons.temple_buddhist),
+    Airport(iata: 'LHR', city: 'London', country: 'United Kingdom'),
+    Airport(iata: 'CDG', city: 'Paris', country: 'France'),
+    Airport(iata: 'BKK', city: 'Bangkok', country: 'Thailand'),
+    Airport(iata: 'DXB', city: 'Dubai', country: 'United Arab Emirates'),
+    Airport(iata: 'NRT', city: 'Tokyo', country: 'Japan'),
+    Airport(iata: 'JFK', city: 'New York', country: 'United States'),
+    Airport(iata: 'FCO', city: 'Rome', country: 'Italy'),
+    Airport(iata: 'SYD', city: 'Sydney', country: 'Australia'),
+    Airport(iata: 'SIN', city: 'Singapore', country: 'Singapore'),
+    Airport(iata: 'CPT', city: 'Cape Town', country: 'South Africa'),
+    Airport(iata: 'LOS', city: 'Lagos', country: 'Nigeria'),
+    Airport(iata: 'DPS', city: 'Denpasar (Bali)', country: 'Indonesia'),
   ];
 
   String _formatDate(DateTime date) {
@@ -146,6 +165,70 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// Opens a bottom sheet of supported currencies. Picking one only
+  /// changes how prices are *displayed* (flight cards, fare summaries,
+  /// wallet balance, payment labels) — every amount is still tracked and
+  /// charged in USD under the hood, so nothing about booking or wallet
+  /// math changes when this is switched.
+  Future<void> _pickCurrency() async {
+    final chosen = await showModalBottomSheet<Currency>(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg))),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+              child: Row(
+                children: [
+                  Text('Display Currency', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Prices are always charged in USD — this just changes what you see.',
+                  style: TextStyle(color: AppColors.textGrey, fontSize: 12),
+                ),
+              ),
+            ),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.5),
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: supportedCurrencies.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (context, i) {
+                  final c = supportedCurrencies[i];
+                  final selected = c.code == CurrencyService.instance.current.code;
+                  return ListTile(
+                    leading: Text(c.flag, style: const TextStyle(fontSize: 22)),
+                    title: Text(c.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    subtitle: Text('${c.code} · ${c.symbol}'),
+                    trailing: selected ? const Icon(Icons.check_circle, color: AppColors.primary) : null,
+                    onTap: () => Navigator.pop(context, c),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (chosen == null) return;
+    await CurrencyService.instance.setCurrency(chosen);
+    if (!mounted) return;
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Prices now shown in ${chosen.name} (${chosen.code})'), duration: const Duration(seconds: 2)),
+    );
+  }
+
   void _search() {
     if (_origin == null || _destination == null) {
       ScaffoldMessenger.of(context)
@@ -210,10 +293,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: const BoxDecoration(color: AppColors.inputFill, shape: BoxShape.circle),
-                                child: const Icon(Icons.notifications_outlined, color: AppColors.textDark),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _CurrencyChip(onTap: _pickCurrency),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: const BoxDecoration(color: AppColors.inputFill, shape: BoxShape.circle),
+                                    child: const Icon(Icons.notifications_outlined, color: AppColors.textDark),
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 6),
                               Row(
@@ -343,27 +433,49 @@ class _HomeScreenState extends State<HomeScreen> {
                           itemCount: _popularDestinations.length,
                           separatorBuilder: (_, __) => const SizedBox(width: 12),
                           itemBuilder: (context, i) {
-                            final d = _popularDestinations[i];
-                            final selected = _destination == d.airport;
+                            final airport = _popularDestinations[i];
+                            final selected = _destination == airport;
                             return GestureDetector(
-                              onTap: () => _selectPopularDestination(d.airport),
+                              onTap: () => _selectPopularDestination(airport),
                               child: Column(
                                 children: [
                                   Container(
                                     width: 90,
                                     height: 80,
+                                    clipBehavior: Clip.antiAlias,
                                     decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(alpha: selected ? 0.18 : 0.08),
                                       borderRadius: BorderRadius.circular(AppRadius.md),
-                                      border: selected ? Border.all(color: AppColors.primary, width: 1.4) : null,
+                                      border: selected ? Border.all(color: AppColors.primary, width: 2) : null,
                                     ),
-                                    child: Icon(d.icon, color: AppColors.primary, size: 32),
+                                    child: Image.network(
+                                      DestinationImages.forIata(airport.iata),
+                                      fit: BoxFit.cover,
+                                      loadingBuilder: (context, child, progress) {
+                                        if (progress == null) return child;
+                                        return Container(
+                                          color: AppColors.primary.withValues(alpha: 0.08),
+                                          child: const Center(
+                                            child: SizedBox(
+                                              width: 16,
+                                              height: 16,
+                                              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      errorBuilder: (context, error, stack) => Container(
+                                        color: AppColors.primary.withValues(alpha: 0.08),
+                                        child: const Center(
+                                          child: Icon(Icons.image_not_supported_outlined, color: AppColors.primary, size: 22),
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                   const SizedBox(height: 6),
                                   SizedBox(
                                     width: 90,
                                     child: Text(
-                                      d.airport.city,
+                                      airport.city,
                                       textAlign: TextAlign.center,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -451,6 +563,42 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Icon(Icons.chevron_right, size: 18, color: AppColors.textGrey),
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Small tappable pill in the home screen header showing the currently
+/// selected display currency (flag + code), e.g. "🇳🇬 NGN". Tapping opens
+/// the currency picker sheet.
+class _CurrencyChip extends StatelessWidget {
+  final VoidCallback onTap;
+  const _CurrencyChip({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final currency = CurrencyService.instance.current;
+    return Material(
+      color: AppColors.inputFill,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(currency.flag, style: const TextStyle(fontSize: 14)),
+              const SizedBox(width: 4),
+              Text(
+                currency.code,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textDark),
+              ),
+              const Icon(Icons.keyboard_arrow_down_rounded, size: 14, color: AppColors.textGrey),
+            ],
+          ),
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../models/payment.dart';
 import '../../models/payment_method.dart';
+import '../../services/currency_service.dart';
 import '../../services/payment_service.dart';
 import '../../services/payment_method_service.dart';
 import '../../services/api_client.dart';
@@ -141,7 +142,7 @@ class _PaymentMethodPickerScreenState extends State<PaymentMethodPickerScreen> {
                 children: [
                   Text(widget.amountLabel, style: const TextStyle(color: AppColors.textGrey)),
                   const SizedBox(height: 4),
-                  Text('\$${widget.amount.toStringAsFixed(2)}', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                  Text(CurrencyService.instance.format(widget.amount), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 24),
                   if (_loadingMethods)
                     const Padding(
@@ -186,7 +187,7 @@ class _PaymentMethodPickerScreenState extends State<PaymentMethodPickerScreen> {
             child: Column(
               children: [
                 PrimaryButton(
-                  label: 'Pay \$${widget.amount.toStringAsFixed(2)}',
+                  label: 'Pay ${CurrencyService.instance.format(widget.amount)}',
                   loading: _paying,
                   onPressed: _selectedMethod == null ? null : _payWithSaved,
                 ),

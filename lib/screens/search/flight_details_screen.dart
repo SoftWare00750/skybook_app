@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../models/flight.dart';
+import '../../services/currency_service.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/flight_card.dart';
 import '../booking/passenger_details_screen.dart';
@@ -99,14 +100,14 @@ class FlightDetailsScreen extends StatelessWidget {
             const SizedBox(height: 24),
             const Text('Fare Summary', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 12),
-            _infoRow('$passengers ${passengers == 1 ? 'Adult' : 'Adults'}', '\$${flight.price.toStringAsFixed(2)}'),
-            _infoRow('Taxes & fees', '\$${taxes.toStringAsFixed(2)}'),
+            _infoRow('$passengers ${passengers == 1 ? 'Adult' : 'Adults'}', CurrencyService.instance.format(flight.price)),
+            _infoRow('Taxes & fees', CurrencyService.instance.format(taxes)),
             const Divider(height: 28),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text('\$${total.toStringAsFixed(2)}',
+                Text(CurrencyService.instance.format(total),
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary)),
               ],
             ),

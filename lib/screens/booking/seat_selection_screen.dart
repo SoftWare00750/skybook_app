@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../models/flight.dart';
+import '../../services/currency_service.dart';
 import '../../widgets/custom_button.dart';
 import 'payment_screen.dart';
 
@@ -120,7 +121,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('\$${seatPrice.toStringAsFixed(2)}',
+                    Text(CurrencyService.instance.format(seatPrice),
                         style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
                     Text(selectedSeat != null ? 'Seat $selectedSeat' : 'No seat selected',
                         style: const TextStyle(color: AppColors.textGrey)),

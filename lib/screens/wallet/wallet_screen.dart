@@ -6,6 +6,7 @@ import '../../widgets/payment_method_tile.dart';
 import '../../models/wallet_transaction.dart';
 import '../../models/payment_method.dart';
 import '../../services/auth_service.dart';
+import '../../services/currency_service.dart';
 import '../../services/wallet_service.dart';
 import '../../services/payment_method_service.dart';
 import '../../services/api_client.dart';
@@ -194,7 +195,7 @@ class _WalletScreenState extends State<WalletScreen> with RouteAware {
                       const Text('Wallet Balance', style: TextStyle(color: Colors.white70)),
                       const SizedBox(height: 6),
                       Text(
-                        '\$${wallet.balance.toStringAsFixed(2)}',
+                        CurrencyService.instance.format(wallet.balance),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold),
@@ -288,7 +289,7 @@ class _WalletScreenState extends State<WalletScreen> with RouteAware {
             ),
           ),
           Text(
-            '${t.isCredit ? '+' : '-'}\$${t.amount.abs().toStringAsFixed(2)}',
+            '${t.isCredit ? '+' : '-'}${CurrencyService.instance.format(t.amount.abs())}',
             style: TextStyle(color: t.isCredit ? AppColors.success : AppColors.primary, fontWeight: FontWeight.bold),
           ),
         ],

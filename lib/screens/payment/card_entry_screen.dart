@@ -4,6 +4,7 @@ import '../../models/payment.dart';
 import '../../services/payment_service.dart';
 import '../../services/payment_method_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/currency_service.dart';
 import '../../services/api_client.dart';
 import '../../widgets/custom_button.dart';
 
@@ -282,7 +283,7 @@ class _CardEntryScreenState extends State<CardEntryScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            PrimaryButton(label: 'Pay \$${widget.amount.toStringAsFixed(2)}', loading: _paying, onPressed: _pay),
+            PrimaryButton(label: 'Pay ${CurrencyService.instance.format(widget.amount)}', loading: _paying, onPressed: _pay),
           ],
         ),
       ),

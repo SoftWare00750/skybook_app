@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
+import 'services/currency_service.dart';
 import 'screens/auth/auth_gate.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Restore the person's last-picked display currency before the first
+  // frame, so flight cards, fare summaries, and the wallet never flash
+  // USD before switching to the saved currency.
+  await CurrencyService.instance.load();
   runApp(const SkyBookApp());
 }
 

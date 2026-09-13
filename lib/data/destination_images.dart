@@ -26,6 +26,11 @@ class DestinationImages {
     'AMS': 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017', // Amsterdam
     'IST': 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200', // Istanbul
     'LAX': 'https://images.unsplash.com/photo-1444723121867-7a241cacace9', // Los Angeles
+    'CPT': 'https://images.unsplash.com/photo-1580060839134-75a50c1d8323', // Cape Town (Table Mountain)
+    'LOS': 'https://images.unsplash.com/photo-1618828665347-7384e39da5e5', // Lagos
+    'ABV': 'https://images.unsplash.com/photo-1618828665347-7384e39da5e5', // Abuja (shares Lagos photo)
+    'KUL': 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07', // Kuala Lumpur (Petronas Towers)
+    'DPS': 'https://images.unsplash.com/photo-1537996194471-e657df975ab4', // Bali
   };
 
   static const String _fallback =
