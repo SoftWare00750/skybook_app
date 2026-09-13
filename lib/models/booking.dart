@@ -16,6 +16,9 @@ class Booking {
   final double totalPrice;
   final String status;
   final bool isUpcoming;
+  final String? paymentMethod;
+  final String? paymentMethodLabel;
+  final String? paymentReference;
   final DateTime createdAt;
 
   const Booking({
@@ -36,6 +39,9 @@ class Booking {
     required this.totalPrice,
     required this.status,
     required this.isUpcoming,
+    this.paymentMethod,
+    this.paymentMethodLabel,
+    this.paymentReference,
     required this.createdAt,
   });
 
@@ -58,6 +64,9 @@ class Booking {
       totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0,
       status: json['status'] as String? ?? 'Confirmed',
       isUpcoming: json['isUpcoming'] as bool? ?? true,
+      paymentMethod: json['paymentMethod'] as String?,
+      paymentMethodLabel: json['paymentMethodLabel'] as String?,
+      paymentReference: json['paymentReference'] as String?,
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
     );
   }

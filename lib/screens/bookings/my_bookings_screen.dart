@@ -5,6 +5,7 @@ import '../../models/booking.dart';
 import '../../services/auth_service.dart';
 import '../../services/booking_service.dart';
 import '../../services/api_client.dart';
+import '../../widgets/empty_state.dart';
 import '../auth/welcome_screen.dart';
 
 class MyBookingsScreen extends StatefulWidget {
@@ -102,10 +103,31 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
 
     final filtered = _bookings.where((b) => _tab == 0 ? b.isUpcoming : !b.isUpcoming).toList();
     if (filtered.isEmpty) {
-      return Center(
-        child: Text(
-          _tab == 0 ? 'No upcoming bookings yet' : 'No past bookings yet',
-          style: const TextStyle(color: AppColors.textGrey),
+      // Empty list still supports pull-to-refresh so a booking made
+      // elsewhere shows up without navigating away and back.
+      return RefreshIndicator(
+        onRefresh: _load,
+        color: AppColors.primary,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(
+              height: 480,
+              child: EmptyState(
+                illustrationAsset: 'assets/icons/empty_bookings.svg',
+                title: 'No bookings yet',
+                subtitle: _tab == 0
+                    ? "You haven't booked any upcoming flights. Search for a flight to get started."
+                    : "You don't have any past bookings to show yet.",
+                action: _tab == 0
+                    ? OutlinedButton(
+                        onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+                        child: const Text('Search flights'),
+                      )
+                    : null,
+              ),
+            ),
+          ],
         ),
       );
     }

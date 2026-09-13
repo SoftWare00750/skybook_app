@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../models/booking.dart';
 import '../../models/flight.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/flight_card.dart';
@@ -17,6 +18,17 @@ class BookingConfirmedScreen extends StatefulWidget {
   final String cabinClass;
   final int passengers;
 
+  /// When the caller (the payment flow) already created the booking after
+  /// a successful simulated charge, pass it here so this screen doesn't
+  /// create a second one — it just displays it.
+  final Booking? booking;
+
+  /// Shown even for guest checkouts (where [booking] is always null,
+  /// since there's no account to save one to) so the "Paid with ..."
+  /// line stays consistent regardless of whether the person is signed in.
+  final String? paymentMethodLabel;
+  final String? paymentReference;
+
   const BookingConfirmedScreen({
     super.key,
     required this.flight,
@@ -24,6 +36,9 @@ class BookingConfirmedScreen extends StatefulWidget {
     this.seatNumber = '',
     this.cabinClass = 'Economy',
     this.passengers = 1,
+    this.booking,
+    this.paymentMethodLabel,
+    this.paymentReference,
   });
 
   @override
@@ -46,6 +61,18 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
   }
 
   Future<void> _createBooking() async {
+    // The payment flow already created this booking right after a
+    // successful simulated charge — nothing left to do but show it. Set
+    // the fields directly rather than via setState: this branch runs
+    // synchronously (no await yet) as part of initState()'s call stack,
+    // and calling setState() there throws ("called during build").
+    // Plain field writes are picked up by the very first build() call.
+    if (widget.booking != null) {
+      _saving = false;
+      _bookingRef = widget.booking!.bookingRef;
+      return;
+    }
+
     final isGuest = await _authService.isGuest();
     final signedIn = await _authService.isSignedIn();
 
@@ -98,6 +125,9 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
     return List.generate(8, (i) => chars[(rand + i * 7) % chars.length]).join();
   }
 
+  String? get _paymentMethodLabel => widget.booking?.paymentMethodLabel ?? widget.paymentMethodLabel;
+  String? get _paymentReference => widget.booking?.paymentReference ?? widget.paymentReference;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -149,6 +179,25 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
                         ],
                       ),
                     ),
+                    if (!_saving && _paymentMethodLabel != null) ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.check_circle_outline, size: 14, color: AppColors.success),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              _paymentReference != null
+                                  ? 'Paid with $_paymentMethodLabel · $_paymentReference'
+                                  : 'Paid with $_paymentMethodLabel',
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: AppColors.textGrey, fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     if (_isGuest && !_saving) ...[
                       const SizedBox(height: 10),
                       Container(

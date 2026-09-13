@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../data/airports.dart';
@@ -16,6 +17,45 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _tripType = 1; // 0 one way, 1 round trip, 2 multi-city
+
+  // Live clock, driven by the device's local time. Ticks every second so
+  // both the greeting (morning/afternoon/evening) and the time-of-day
+  // label stay accurate for as long as the home screen is open.
+  late DateTime _now;
+  Timer? _clockTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _now = DateTime.now();
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() => _now = DateTime.now());
+    });
+  }
+
+  @override
+  void dispose() {
+    _clockTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Good Morning (before 12pm) / Good Afternoon (12pm–5pm) / Good Evening
+  /// (after 5pm), based on the device's current local hour.
+  String get _greeting {
+    final hour = _now.hour;
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }
+
+  /// e.g. "2:07 PM" — formatted manually so we don't need to pull in intl
+  /// just for a clock label.
+  String get _formattedTime {
+    final hour12 = _now.hour % 12 == 0 ? 12 : _now.hour % 12;
+    final minute = _now.minute.toString().padLeft(2, '0');
+    final period = _now.hour < 12 ? 'AM' : 'PM';
+    return '$hour12:$minute $period';
+  }
 
   Airport? _origin = airports.firstWhere((a) => a.iata == 'JFK');
   Airport? _destination = airports.firstWhere((a) => a.iata == 'LHR');
@@ -153,23 +193,41 @@ class _HomeScreenState extends State<HomeScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Good Afternoon',
-                                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                Text(_greeting,
+                                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                                     overflow: TextOverflow.ellipsis),
-                                SizedBox(height: 4),
+                                const SizedBox(height: 4),
                                 Text('Where would you like to go?',
-                                    style: TextStyle(color: AppColors.textGrey), overflow: TextOverflow.ellipsis),
+                                    style: const TextStyle(color: AppColors.textGrey),
+                                    overflow: TextOverflow.ellipsis),
                               ],
                             ),
                           ),
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: const BoxDecoration(color: AppColors.inputFill, shape: BoxShape.circle),
-                            child: const Icon(Icons.notifications_outlined, color: AppColors.textDark),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: const BoxDecoration(color: AppColors.inputFill, shape: BoxShape.circle),
+                                child: const Icon(Icons.notifications_outlined, color: AppColors.textDark),
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.access_time_rounded, size: 13, color: AppColors.textGrey),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    _formattedTime,
+                                    style: const TextStyle(fontSize: 12, color: AppColors.textGrey),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ],
                       ),

@@ -1,0 +1,29 @@
+<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
+  <!-- soft backdrop -->
+  <circle cx="100" cy="82" r="68" fill="#F3F3F6"/>
+
+  <!-- boarding pass / ticket -->
+  <g>
+    <rect x="38" y="48" width="124" height="68" rx="12" fill="#FFFFFF" stroke="#EDEDF2" stroke-width="2"/>
+    <!-- notch cut-outs to read as a ticket stub -->
+    <circle cx="118" cy="48" r="7" fill="#F3F3F6"/>
+    <circle cx="118" cy="116" r="7" fill="#F3F3F6"/>
+    <!-- perforation line -->
+    <line x1="118" y1="60" x2="118" y2="104" stroke="#EDEDF2" stroke-width="2" stroke-dasharray="4 5"/>
+
+    <!-- left side: route lines -->
+    <rect x="50" y="62" width="46" height="6" rx="3" fill="#E31E24" opacity="0.85"/>
+    <rect x="50" y="74" width="34" height="5" rx="2.5" fill="#EDEDF2"/>
+    <rect x="50" y="84" width="40" height="5" rx="2.5" fill="#EDEDF2"/>
+    <rect x="50" y="96" width="26" height="5" rx="2.5" fill="#EDEDF2"/>
+
+    <!-- right stub: small plane mark -->
+    <g transform="translate(130,72)">
+      <circle cx="12" cy="10" r="14" fill="#FCE9EA"/>
+      <path d="M12 3.5c.5 0 .9.3 1 .8l.9 3.6 4.6 2.7c.3.2.5.5.5.9v1c0 .4-.4.7-.8.6l-4.9-1.2-.6 3.6 2 1.4c.2.2.3.4.3.7v.6c0 .3-.3.6-.6.5l-2.9-.7-.5 1.9c-.1.3-.4.5-.7.5h-.6c-.3 0-.6-.2-.7-.5l-.5-1.9-2.9.7c-.3.1-.6-.2-.6-.5v-.6c0-.3.1-.5.3-.7l2-1.4-.6-3.6-4.9 1.2c-.4.1-.8-.2-.8-.6v-1c0-.4.2-.7.5-.9l4.6-2.7.9-3.6c.1-.5.5-.8 1-.8z" fill="#E31E24"/>
+    </g>
+  </g>
+
+  <!-- ground shadow -->
+  <ellipse cx="100" cy="134" rx="46" ry="6" fill="#EDEDF2"/>
+</svg>

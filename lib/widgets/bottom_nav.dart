@@ -40,7 +40,13 @@ class AppBottomNav extends StatelessWidget {
       default:
         page = const ProfileScreen();
     }
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page));
+    // The wallet route is named so the top-up flow (which can be several
+    // screens deep — pick a method, maybe enter a new card/bank/other)
+    // can pop straight back to it in one call instead of guessing depth.
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(settings: index == 3 ? const RouteSettings(name: 'wallet') : null, builder: (_) => page),
+    );
   }
 
   @override

@@ -11,14 +11,19 @@ class BookingService {
   }
 
   /// Creates a booking on the backend once payment succeeds, and returns
-  /// it (with a real, server-generated booking reference). Debits the
-  /// user's wallet by [totalPrice] as part of the same call.
+  /// it (with a real, server-generated booking reference). [paymentMethod]
+  /// should be the result of a prior [PaymentService.simulate] call —
+  /// only "wallet" debits the wallet ledger here, since card / bank
+  /// transfer / other were already charged directly by that call.
   Future<Booking> createBooking({
     required Flight flight,
     required String seatNumber,
     required String cabinClass,
     required int passengers,
     required double totalPrice,
+    String? paymentMethod,
+    String? paymentMethodLabel,
+    String? paymentReference,
   }) async {
     final departDate = _toIsoDate(flight.date) ?? DateTime.now().toIso8601String().split('T').first;
     final response = await _client.post('/api/bookings', {
@@ -35,6 +40,9 @@ class BookingService {
       'cabinClass': cabinClass,
       'passengers': passengers,
       'totalPrice': totalPrice,
+      'paymentMethod': paymentMethod,
+      'paymentMethodLabel': paymentMethodLabel,
+      'paymentReference': paymentReference,
     }) as Map<String, dynamic>;
     return Booking.fromJson(response);
   }

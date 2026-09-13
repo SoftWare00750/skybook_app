@@ -2,12 +2,16 @@ class WalletTransaction {
   final String id;
   final String label;
   final double amount;
+  final String? method;
+  final String? reference;
   final DateTime createdAt;
 
   const WalletTransaction({
     required this.id,
     required this.label,
     required this.amount,
+    this.method,
+    this.reference,
     required this.createdAt,
   });
 
@@ -18,6 +22,8 @@ class WalletTransaction {
       id: json['id'] as String,
       label: json['label'] as String? ?? '',
       amount: (json['amount'] as num?)?.toDouble() ?? 0,
+      method: json['method'] as String?,
+      reference: json['reference'] as String?,
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
     );
   }

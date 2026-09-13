@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import '../../main.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/bottom_nav.dart';
+import '../../widgets/payment_method_tile.dart';
 import '../../models/wallet_transaction.dart';
+import '../../models/payment_method.dart';
 import '../../services/auth_service.dart';
 import '../../services/wallet_service.dart';
+import '../../services/payment_method_service.dart';
 import '../../services/api_client.dart';
 import '../auth/welcome_screen.dart';
+import 'payment_methods_screen.dart';
+import 'topup_payment_screen.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -14,21 +20,42 @@ class WalletScreen extends StatefulWidget {
   State<WalletScreen> createState() => _WalletScreenState();
 }
 
-class _WalletScreenState extends State<WalletScreen> {
+class _WalletScreenState extends State<WalletScreen> with RouteAware {
   final _authService = AuthService();
   final _walletService = WalletService();
+  final _methodService = PaymentMethodService();
 
   bool _loading = true;
   bool _signedIn = false;
-  bool _topUpInFlight = false;
   String? _error;
   Wallet? _wallet;
+  List<PaymentMethod> _methods = [];
 
   @override
   void initState() {
     super.initState();
     _load();
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  // Fires when a screen pushed on top of this one (adding a payment
+  // method, or the multi-step "Add Money" flow) gets popped and this
+  // wallet screen becomes visible again — so the balance, transactions,
+  // and saved methods are always fresh without the person having to
+  // pull to refresh themselves.
+  @override
+  void didPopNext() => _load();
 
   Future<void> _load() async {
     setState(() {
@@ -46,10 +73,14 @@ class _WalletScreenState extends State<WalletScreen> {
     }
     try {
       final wallet = await _walletService.getWallet();
+      // Best-effort: a hiccup fetching saved payment methods shouldn't
+      // block the wallet balance/transactions from showing.
+      final methods = await _methodService.list().catchError((_) => <PaymentMethod>[]);
       if (!mounted) return;
       setState(() {
         _signedIn = true;
         _wallet = wallet;
+        _methods = methods;
         _loading = false;
       });
     } on ApiException catch (e) {
@@ -87,6 +118,8 @@ class _WalletScreenState extends State<WalletScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text('Add Money', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            const Text("You'll choose how to pay on the next step.", style: TextStyle(color: AppColors.textGrey, fontSize: 12)),
             const SizedBox(height: 16),
             TextField(
               controller: controller,
@@ -105,27 +138,22 @@ class _WalletScreenState extends State<WalletScreen> {
                 }
                 Navigator.pop(context, value);
               },
-              child: const Text('Add Money'),
+              child: const Text('Continue'),
             ),
           ],
         ),
       ),
     );
-    if (amount == null) return;
+    if (amount == null || !mounted) return;
 
-    setState(() => _topUpInFlight = true);
-    try {
-      await _walletService.topUp(amount: amount);
-      await _load();
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Something went wrong. Please try again.')));
-    } finally {
-      if (mounted) setState(() => _topUpInFlight = false);
-    }
+    // TopUpPaymentScreen handles the charge + wallet credit itself, then
+    // pops straight back to this screen — didPopNext() above refreshes.
+    Navigator.push(context, MaterialPageRoute(builder: (_) => TopUpPaymentScreen(amount: amount)));
+  }
+
+  Future<void> _openPaymentMethods() async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentMethodsScreen()));
+    if (mounted) _load();
   }
 
   @override
@@ -178,16 +206,53 @@ class _WalletScreenState extends State<WalletScreen> {
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white, foregroundColor: AppColors.primary, minimumSize: const Size(0, 40)),
-                  onPressed: _topUpInFlight ? null : _addMoney,
-                  child: _topUpInFlight
-                      ? const SizedBox(
-                          height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
-                      : const Text('Add Money'),
+                  onPressed: _addMoney,
+                  child: const Text('Add Money'),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Payment Methods', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              TextButton(
+                onPressed: _openPaymentMethods,
+                child: Text(_methods.isEmpty ? 'Add' : 'Manage'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (_methods.isEmpty)
+            InkWell(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              onTap: _openPaymentMethods,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(color: AppColors.divider, style: BorderStyle.solid),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.add_card_outlined, color: AppColors.textGrey),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text('Add a card, bank account, or other provider', style: TextStyle(color: AppColors.textGrey)),
+                    ),
+                    Icon(Icons.chevron_right, color: AppColors.textGrey),
+                  ],
+                ),
+              ),
+            )
+          else
+            ..._methods.take(2).map((m) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: PaymentMethodTile(method: m),
+                )),
+          const SizedBox(height: 16),
           const Text('Recent Transactions', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 12),
           if (wallet.transactions.isEmpty)
