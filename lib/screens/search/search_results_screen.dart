@@ -86,22 +86,26 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       context: context,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg))),
       builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('Sort by', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ),
-            for (final option in _sortOptions)
-              RadioListTile<String>(
-                value: option,
-                groupValue: _sortBy,
-                activeColor: AppColors.primary,
-                title: Text(option),
-                onChanged: (v) => Navigator.pop(context, v),
+        child: RadioGroup<String>(
+          groupValue: _sortBy,
+          onChanged: (v) {
+            if (v != null) Navigator.pop(context, v);
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text('Sort by', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
-          ],
+              for (final option in _sortOptions)
+                RadioListTile<String>(
+                  value: option,
+                  activeColor: AppColors.primary,
+                  title: Text(option),
+                ),
+            ],
+          ),
         ),
       ),
     );

@@ -31,7 +31,7 @@ class AppTheme {
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,
         primary: AppColors.primary,
-        background: AppColors.background,
+        surface: AppColors.background,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.primary,

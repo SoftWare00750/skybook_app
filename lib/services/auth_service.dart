@@ -54,7 +54,7 @@ class AuthService {
           )
           .timeout(const Duration(seconds: 15));
 
-      return _handleAuthResponse(response);
+      return await _handleAuthResponse(response);
     } catch (e) {
       return AuthResult.error(_friendlyError(e));
     }
@@ -73,7 +73,7 @@ class AuthService {
           )
           .timeout(const Duration(seconds: 15));
 
-      return _handleAuthResponse(response);
+      return await _handleAuthResponse(response);
     } catch (e) {
       return AuthResult.error(_friendlyError(e));
     }
@@ -112,7 +112,7 @@ class AuthService {
           )
           .timeout(const Duration(seconds: 15));
 
-      return _handleAuthResponse(response);
+      return await _handleAuthResponse(response);
     } catch (e) {
       return AuthResult.error(_friendlyError(e));
     }
@@ -141,7 +141,7 @@ class AuthService {
           )
           .timeout(const Duration(seconds: 15));
 
-      return _handleAuthResponse(response);
+      return await _handleAuthResponse(response);
     } catch (e) {
       return AuthResult.error(_friendlyError(e));
     }
